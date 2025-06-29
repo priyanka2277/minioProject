@@ -6,12 +6,15 @@ import com.example.minioproject.enums.ProductStatus;
 import com.example.minioproject.service.ProductService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/products")
@@ -23,6 +26,8 @@ public class ProductController {
     }
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private Validator validator;
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> createProduct(
             @RequestPart("product") String productData,
@@ -31,6 +36,15 @@ public class ProductController {
         try {
             ProductDto productDto =
                     objectMapper.readValue(productData, ProductDto.class);
+            //Manual validation
+            Set<ConstraintViolation<ProductDto>> violations=validator.validate(productDto);
+            if(!violations.isEmpty()){
+                StringBuilder errors=new StringBuilder();
+                for(ConstraintViolation<ProductDto> violation:violations){
+                    errors.append(violation.getPropertyPath()).append(": ").append(violation.getMessage()).append("; ");
+                }
+                return ResponseEntity.badRequest().body("Validation errors: " + errors.toString());
+            }
 
             productService.createProduct(productDto, imageFile);
             return ResponseEntity.ok("Product created successfully");
@@ -56,6 +70,14 @@ public class ProductController {
     ) throws Exception {
 
         ProductDto productDto = objectMapper.readValue(productData, ProductDto.class);
+        Set<ConstraintViolation<ProductDto>> violations=validator.validate(productDto);
+        if(!violations.isEmpty()){
+            StringBuilder errors=new StringBuilder();
+            for(ConstraintViolation<ProductDto> violation:violations){
+                errors.append(violation.getPropertyPath()).append(": ").append(violation.getMessage()).append("; ");
+            }
+            return ResponseEntity.badRequest().body("Validation errors: " + errors.toString());
+        }
         productService.updateProduct(id, productDto, imageFile);
         return ResponseEntity.ok("Product updated successfully");
     }

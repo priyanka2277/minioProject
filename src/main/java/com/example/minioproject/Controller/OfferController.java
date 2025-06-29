@@ -3,6 +3,7 @@ package com.example.minioproject.Controller;
 import com.example.minioproject.dto.OfferDto;
 import com.example.minioproject.entity.Offer;
 import com.example.minioproject.service.OfferService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +18,11 @@ public class OfferController {
     @Autowired
     private final OfferService offerService;
     @PostMapping
-    public ResponseEntity<OfferDto> createOffer(@RequestBody OfferDto offerDto){
+    public ResponseEntity<OfferDto> createOffer(@RequestBody @Valid OfferDto offerDto){
         return ResponseEntity.ok(offerService.createOffer(offerDto));
     }
     @PutMapping("/{id}")
-    public ResponseEntity<OfferDto> updateOffer(@PathVariable Long id,@RequestBody OfferDto offerDto){
+    public ResponseEntity<OfferDto> updateOffer(@PathVariable Long id,@RequestBody @Valid OfferDto offerDto){
         return ResponseEntity.ok(offerService.updateOffer(id,offerDto));
     }
     @GetMapping("/{id}")

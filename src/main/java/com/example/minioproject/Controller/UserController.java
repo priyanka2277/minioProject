@@ -3,6 +3,7 @@ package com.example.minioproject.Controller;
 import com.example.minioproject.dto.UserDto;
 import com.example.minioproject.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,7 @@ public class UserController {
     @Autowired
     private UserService userService;
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody UserDto userDto) {
+    public ResponseEntity<?> registerUser(@RequestBody @Valid UserDto userDto) {
         UserDto registeredUser = userService.registerUser(userDto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(String.format("User '%s' registered successfully.",
@@ -33,7 +34,7 @@ public class UserController {
         }
 }
     @PutMapping("/{userId}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable Long userId, @RequestBody UserDto userDto) {
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long userId, @RequestBody @Valid  UserDto userDto) {
         UserDto updatedUser = userService.updateUser(userId, userDto);
         return ResponseEntity.ok(updatedUser);
     }
