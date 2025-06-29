@@ -1,0 +1,16 @@
+services:
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - "9000:9000"   # MinIO API port
+      - "9001:9001"   # MinIO Web UI port
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio-data:/data
+    command: server --console-address ":9001" /data
+
+volumes:
+  minio-data:
