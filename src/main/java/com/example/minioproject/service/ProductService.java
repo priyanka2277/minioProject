@@ -2,6 +2,7 @@ package com.example.minioproject.service;
 
 import com.example.minioproject.dto.ProductDto;
 import com.example.minioproject.entity.Offer;
+import org.springframework.data.domain.Pageable;
 import com.example.minioproject.entity.Product;
 import com.example.minioproject.entity.User;
 import com.example.minioproject.enums.ProductStatus;
@@ -9,6 +10,9 @@ import com.example.minioproject.repository.OfferRepository;
 import com.example.minioproject.repository.ProductRepository;
 import com.example.minioproject.repository.UserRepository;
 import io.minio.MinioClient;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import io.minio.PutObjectArgs;
 import io.minio.errors.MinioException;
@@ -18,6 +22,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -122,19 +127,29 @@ public class ProductService {
         return dto;
 
     }
-    public List<ProductDto> getAllProducts(){
-        List<Product> products=productRepository.findAll();
-        List<ProductDto> dtoList=new ArrayList<>();
-        for(Product p:products){
-            ProductDto dto=modelMapper.map(p,ProductDto.class);
-            if(p.getOffers()!=null){
-                List<Long> offerIds=p.getOffers().stream().map(Offer::getId).toList();
+    public List<ProductDto> getAllProducts(Integer pageNumber, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber-1, pageSize, Sort.by("id").ascending());
+        Page<Product> pageProduct = productRepository.findAll(pageable);
+        List<Product> allProducts = pageProduct.getContent();
+
+        List<ProductDto> dtoList = new ArrayList<>();
+        for (Product product : allProducts) {
+            ProductDto dto = modelMapper.map(product, ProductDto.class);
+
+            if (product.getOffers() != null) {
+                List<Long> offerIds = product.getOffers()
+                        .stream()
+                        .map(Offer::getId)
+                        .toList();
                 dto.setOfferIds(offerIds);
             }
+
             dtoList.add(dto);
         }
+
         return dtoList;
     }
+
     public void changeStatus(Long id, ProductStatus status){
         Product product=productRepository.findById(id).orElseThrow(()->new RuntimeException("Product not found"));
         product.setStatus(status);

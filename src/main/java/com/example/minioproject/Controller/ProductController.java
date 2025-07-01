@@ -90,9 +90,13 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProduct(id));
     }
     @GetMapping
-    public ResponseEntity<List<ProductDto>> getAllProducts(){
-        return ResponseEntity.ok(productService.getAllProducts());
+    public ResponseEntity<List<ProductDto>> getAllProducts(
+            @RequestParam(value = "pageNumber", defaultValue = "1", required = false) Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = "5", required = false) Integer pageSize) {
+
+        return ResponseEntity.ok(productService.getAllProducts(pageNumber, pageSize));
     }
+
     @PatchMapping("/{id}/rent")
     public ResponseEntity<String> rentProduct(@PathVariable Long id){
         productService.changeStatus(id, ProductStatus.RENTED);

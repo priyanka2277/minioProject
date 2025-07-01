@@ -10,9 +10,14 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,22 +81,38 @@ public class OfferService {
 
     }
 
-    public List<OfferDto> getAllOffers(){
-        List<Offer> offers= offerRepository.findAll();
-        List<OfferDto> dtoList=new ArrayList<>();
-        for(Offer offer:offers){
-            OfferDto dto=new OfferDto();
-            dto.setTitle(offer.getTitle());
-            dto.setDescription(offer.getDescription());
-            if(offer.getProducts()!=null){
-                List<Long> productIds=offer.getProducts().stream().map(Product::getId).toList();
-                dto.setProductIds(productIds);
-            }
-            dtoList.add(dto);
-        }
-        return dtoList;
+    public List<OfferDto> getAllOffers(Integer pageNumber, Integer pageSize) {
 
+
+        Pageable pageable = PageRequest.of(pageNumber - 1, pageSize, Sort.by("id").ascending());
+
+        // Fetch the requested page of Offer entities
+        Page<Offer> pageOffer = offerRepository.findAll(pageable);
+
+        // Convert entities → DTOs
+        List<OfferDto> dtoList = pageOffer.getContent()
+                .stream()
+                .map(offer -> {
+                    OfferDto dto = new OfferDto();
+                    dto.setTitle(offer.getTitle());
+                    dto.setDescription(offer.getDescription());
+
+                    if (offer.getProducts() != null && !offer.getProducts().isEmpty()) {
+                        List<Long> productIds = offer.getProducts()
+                                .stream()
+                                .map(Product::getId)
+                                .toList();
+                        dto.setProductIds(productIds);
+                    } else {
+                        dto.setProductIds(Collections.emptyList());
+                    }
+                    return dto;
+                })
+                .toList();
+
+        return dtoList;
     }
+
     public OfferDto addProductToOffer(Long offerId,Long productId){
         Offer offer=offerRepository.findById(offerId).orElseThrow(()->new RuntimeException("Offer not found"));
         Product product=productRepository.findById(productId).orElseThrow(()->new RuntimeException("Product not found"));

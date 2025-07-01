@@ -31,8 +31,12 @@ public class OfferController {
 
     }
     @GetMapping
-    public ResponseEntity<List<OfferDto>> getAllOffers(){
-        return ResponseEntity.ok(offerService.getAllOffers());
+    public ResponseEntity<List<OfferDto>> getAllOffers(
+            @RequestParam(value="pageNumber",defaultValue = "1",required = false) Integer pageNumber,
+            @RequestParam(value="pageSize",defaultValue = "5",required = false) Integer pageSize
+
+    ){
+        return ResponseEntity.ok(offerService.getAllOffers(pageNumber,pageSize));
     }
     @PostMapping("/{offerId}/products/{productId}")
     public ResponseEntity<OfferDto> addProductToOffer(@PathVariable Long offerId,@PathVariable Long productId){
