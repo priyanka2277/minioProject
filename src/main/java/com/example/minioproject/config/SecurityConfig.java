@@ -58,6 +58,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/products").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/products/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/products/rented", "/products/donated").permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
 
                         .requestMatchers(HttpMethod.PATCH,
                                 "/products/*/rent",

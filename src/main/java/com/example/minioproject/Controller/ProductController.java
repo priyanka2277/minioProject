@@ -6,6 +6,8 @@ import com.example.minioproject.enums.ProductStatus;
 import com.example.minioproject.service.ProductService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/products")
+@Tag(name="Product APIs")
 public class ProductController {
     private final ProductService productService;
 
@@ -29,6 +32,7 @@ public class ProductController {
     @Autowired
     private Validator validator;
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary="Create the product")
     public ResponseEntity<String> createProduct(
             @RequestPart("product") String productData,
             @RequestPart("image")  MultipartFile imageFile) {
@@ -63,6 +67,7 @@ public class ProductController {
             value = "/{id}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
+    @Operation(summary = "Update the product by id")
     public ResponseEntity<String> updateProduct(
             @PathVariable Long id,
             @RequestPart("product") String productData,
@@ -86,10 +91,12 @@ public class ProductController {
 
 
     @GetMapping("/{id}")
+    @Operation(summary="Get Product By Id")
     public ResponseEntity<ProductDto> getProduct(@PathVariable Long id){
         return ResponseEntity.ok(productService.getProduct(id));
     }
     @GetMapping
+    @Operation(summary="Get all Products")
     public ResponseEntity<List<ProductDto>> getAllProducts(
             @RequestParam(value = "pageNumber", defaultValue = "1", required = false) Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = "5", required = false) Integer pageSize) {
@@ -98,20 +105,24 @@ public class ProductController {
     }
 
     @PatchMapping("/{id}/rent")
+    @Operation(summary="Make the product rented by id")
     public ResponseEntity<String> rentProduct(@PathVariable Long id){
         productService.changeStatus(id, ProductStatus.RENTED);
         return ResponseEntity.ok("Product rented");
     }
     @PatchMapping("/{id}/donate")
+    @Operation(summary="Make the product donated by id")
     public ResponseEntity<String> donateProduct(@PathVariable Long id){
         productService.changeStatus(id,ProductStatus.DONATED);
         return ResponseEntity.ok("Product donated");
     }
     @GetMapping("/rented")
+    @Operation(summary="Get all rented products")
     public ResponseEntity<List<ProductDto>> getRentedProducts(){
         return ResponseEntity.ok(productService.getProductByStatusJPQL(ProductStatus.RENTED));
     }
     @GetMapping("/donated")
+    @Operation(summary="Get all donated products")
     public ResponseEntity<List<ProductDto>> getDonatedProducts(){
         return ResponseEntity.ok(productService.getProductByStatusNative(ProductStatus.DONATED));
 
